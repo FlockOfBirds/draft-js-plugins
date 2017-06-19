@@ -37,20 +37,27 @@ export default class Toolbar extends React.Component {
     // when focusing editor with already present selection
     setTimeout(() => {
       let position;
+      let arrowPosition = { left: "50%" };
       if (isVisible) {
+        const toolbarWidth = _this.toolbar.clientWidth;
         const relativeParent = getRelativeParent(this.toolbar.parentElement);
         const relativeRect = relativeParent ? relativeParent.getBoundingClientRect() : document.body.getBoundingClientRect();
         const selectionRect = getVisibleSelectionRect(window);
+        const middle = selectionRect.left - relativeRect.left + selectionRect.width / 2;
+        const middleMin = (toolbarWidth/2) - relativeRect.left;
+        const middleMax = relativeRect.right - (toolbarWidth/2);
+        const left = middle < leftMin ? leftMin : middle > leftMax ? leftMax : middle;
+        arrowPosition.left = 50 + (((middle - left) / toolbarWidth) * 100) + "%";
         position = {
           top: (selectionRect.top - relativeRect.top) - toolbarHeight,
-          left: (selectionRect.left - relativeRect.left) + (selectionRect.width / 2),
-          transform: 'translate(-50%) scale(1)',
+          left: left,
+          transform: 'translate(-50%) scale(1, 1)',
           transition: 'transform 0.15s cubic-bezier(.3,1.2,.2,1)',
         };
       } else {
-        position = { transform: 'translate(-50%) scale(0)' };
+        position = { transform: 'translate(-50%) scale(1, 0)' };
       }
-      this.setState({ position });
+      this.setState({ position, arrowPosition});
     }, 0);
   }
 
@@ -70,6 +77,7 @@ export default class Toolbar extends React.Component {
             setEditorState={store.getItem('setEditorState')}
           />
         ))}
+        <div className={theme.toolbarStyles.toolbarArrow} style={this.state.arrowPosition}/>
       </div>
     );
   }
